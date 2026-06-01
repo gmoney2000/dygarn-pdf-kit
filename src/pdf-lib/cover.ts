@@ -1,8 +1,30 @@
-import type { PDFPage } from "pdf-lib";
+import type { PDFFont, PDFPage } from "pdf-lib";
 import { rgb } from "pdf-lib";
 
 import type { BookendContext } from "./context";
 import type { BookendFonts } from "./fonts";
+
+/**
+ * Greedy word-wrap by measured width. Words longer than maxWidth are emitted
+ * on their own line (they will visually overflow but at least won't crash the
+ * layout). Returns at least one line.
+ */
+function wrapByWidth(text: string, font: PDFFont, size: number, maxWidth: number): string[] {
+  const out: string[] = [];
+  const words = text.split(/\s+/).filter(Boolean);
+  let line = "";
+  for (const w of words) {
+    const candidate = line ? `${line} ${w}` : w;
+    if (font.widthOfTextAtSize(candidate, size) <= maxWidth) {
+      line = candidate;
+    } else {
+      if (line) out.push(line);
+      line = w;
+    }
+  }
+  if (line) out.push(line);
+  return out.length > 0 ? out : [text];
+}
 
 /**
  * Draw a branded cover page. Logo centered on the band, doc type label,
@@ -62,15 +84,47 @@ export function drawBrandedCover(page: PDFPage, ctx: BookendContext, fonts: Book
   cursorY -= 30;
 
   if (ctx.projectName) {
-    const projW = helvBold.widthOfTextAtSize(ctx.projectName, 22);
-    page.drawText(ctx.projectName, {
-      x: CX - projW / 2,
-      y: cursorY,
-      size: 22,
-      font: helvBold,
-      color: rgb(0.08, 0.08, 0.08),
-    });
-    cursorY -= 24;
+    // Available column for the project name title. Leave a small margin off
+    // each edge so the text never butts against the page border.
+    const PROJ_MARGIN = 36;
+    const PROJ_MAX_W = W - PROJ_MARGIN * 2;
+    const PROJ_MAX_SIZE = 22;
+    const PROJ_MIN_SIZE = 14;
+
+    // 1) Try shrinking from MAX down to MIN, single line, until it fits.
+    let projSize = PROJ_MAX_SIZE;
+    while (projSize > PROJ_MIN_SIZE && helvBold.widthOfTextAtSize(ctx.projectName, projSize) > PROJ_MAX_W) {
+      projSize -= 1;
+    }
+
+    if (helvBold.widthOfTextAtSize(ctx.projectName, projSize) <= PROJ_MAX_W) {
+      // Single line fits at this size.
+      const projW = helvBold.widthOfTextAtSize(ctx.projectName, projSize);
+      page.drawText(ctx.projectName, {
+        x: CX - projW / 2,
+        y: cursorY,
+        size: projSize,
+        font: helvBold,
+        color: rgb(0.08, 0.08, 0.08),
+      });
+      cursorY -= projSize + 2;
+    } else {
+      // 2) Still too long at min size. Word-wrap to 2+ lines at min size.
+      const lines = wrapByWidth(ctx.projectName, helvBold, PROJ_MIN_SIZE, PROJ_MAX_W);
+      for (const line of lines) {
+        const lineW = helvBold.widthOfTextAtSize(line, PROJ_MIN_SIZE);
+        page.drawText(line, {
+          x: CX - lineW / 2,
+          y: cursorY,
+          size: PROJ_MIN_SIZE,
+          font: helvBold,
+          color: rgb(0.08, 0.08, 0.08),
+        });
+        cursorY -= PROJ_MIN_SIZE + 2;
+      }
+      // Add the trailing gap the original layout expected.
+      cursorY -= 2;
+    }
   }
 
   if (ctx.location) {
