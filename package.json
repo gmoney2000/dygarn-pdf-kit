@@ -1,0 +1,61 @@
+{
+  "name": "@gmoney2000/dygarn-pdf-kit",
+  "version": "0.1.0",
+  "description": "Branded PDF design system for DyGarn ecosystem apps (RepFirm, dygarn-dashboard). Shared visual primitives + style themes for quote, submittal, PO, and outreach kits.",
+  "license": "UNLICENSED",
+  "private": false,
+  "author": "Greg Drysdale <greg@dygarn.com>",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./react-pdf": {
+      "types": "./dist/react-pdf.d.ts",
+      "import": "./dist/react-pdf.js",
+      "require": "./dist/react-pdf.cjs"
+    },
+    "./pdf-lib": {
+      "types": "./dist/pdf-lib.d.ts",
+      "import": "./dist/pdf-lib.js",
+      "require": "./dist/pdf-lib.cjs"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "typecheck": "tsc --noEmit",
+    "clean": "rimraf dist"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/gmoney2000/dygarn-pdf-kit.git"
+  },
+  "peerDependencies": {
+    "@react-pdf/renderer": ">=3.0.0",
+    "pdf-lib": ">=1.17.0",
+    "react": ">=18.0.0"
+  },
+  "devDependencies": {
+    "@react-pdf/renderer": "^4.0.0",
+    "@types/react": "^19.0.0",
+    "pdf-lib": "^1.17.1",
+    "react": "^19.0.0",
+    "rimraf": "^6.0.0",
+    "tsup": "^8.3.0",
+    "typescript": "^5.5.0"
+  }
+}
