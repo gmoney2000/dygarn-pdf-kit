@@ -6,6 +6,7 @@ import type { BookendFonts } from "./fonts";
 
 export const BRANDED_HEADER_HEIGHT = 110; // dark band + stripe + cream info zone
 export const BRANDED_HEADER_MINIMAL_H = 56; // dark band + stripe + thin cream strip
+export const BRANDED_HEADER_PROMINENT_H = 180; // tall band for quote-style covers (bigger logo)
 
 function clip(s: string, max: number): string {
   if (s.length <= max) return s;
@@ -26,9 +27,14 @@ export function drawBrandedHeader(
   page: PDFPage,
   ctx: BookendContext,
   fonts: BookendFonts,
-  opts?: { showFixtureCard?: boolean },
+  opts?: { showFixtureCard?: boolean; prominent?: boolean },
 ): void {
   const showFixtureCard = opts?.showFixtureCard ?? false;
+  const prominent = opts?.prominent ?? false;
+  if (prominent) {
+    drawProminentHeader(page, ctx, fonts);
+    return;
+  }
   const { helv, helvBold } = fonts;
   const { bandColor, accentColor, cardColors, logoImage, logoAspect, themeMode } = ctx;
   const W = page.getWidth();
@@ -176,5 +182,110 @@ function drawSimpleInfoStrip(
   } else if (ctx.docType) {
     const dtW = helv.widthOfTextAtSize(ctx.docType, 8);
     page.drawText(ctx.docType, { x: W - PAD - dtW, y: stripY, size: 8, font: helv, color: rgb(0.4, 0.4, 0.4) });
+  }
+}
+
+
+function drawProminentHeader(
+  page: PDFPage,
+  ctx: BookendContext,
+  fonts: BookendFonts,
+): void {
+  const { helv, helvBold } = fonts;
+  const { bandColor, accentColor, cardColors, logoImage, logoAspect, themeMode } = ctx;
+  const W = page.getWidth();
+  const H = page.getHeight();
+  const TOP_BANNER_H = BRANDED_HEADER_PROMINENT_H;
+
+  const PAD = 20;
+  const STRIPE_H = 3;
+  const CREAM_H = 28; // thin cream strip at bottom of band for meta info
+  const DARK_H = TOP_BANNER_H - STRIPE_H - CREAM_H;
+
+  const darkBandY = H - DARK_H;
+  const stripeY = darkBandY - STRIPE_H;
+  const headerTop = H - TOP_BANNER_H;
+
+  page.drawRectangle({ x: 0, y: darkBandY, width: W, height: DARK_H, color: bandColor });
+  page.drawRectangle({ x: 0, y: stripeY, width: W, height: STRIPE_H, color: accentColor });
+  page.drawRectangle({ x: 0, y: headerTop, width: W, height: CREAM_H, color: cardColors.cream });
+
+  page.drawLine({
+    start: { x: 0, y: headerTop },
+    end: { x: W, y: headerTop },
+    thickness: 0.5,
+    color: rgb(0.8, 0.8, 0.78),
+  });
+
+  if (logoImage) {
+    const LOGO_MAX_H = 120;
+    const LOGO_MAX_W = Math.min(W - PAD * 2, 320);
+    let logoH = LOGO_MAX_H;
+    let logoW = logoH * logoAspect;
+    if (logoW > LOGO_MAX_W) {
+      logoW = LOGO_MAX_W;
+      logoH = logoW / logoAspect;
+    }
+    const logoX = PAD;
+    const logoY = darkBandY + (DARK_H - logoH) / 2;
+    page.drawImage(logoImage, { x: logoX, y: logoY, width: logoW, height: logoH });
+  } else {
+    const nameColor = themeMode === "dark" ? rgb(1, 1, 1) : rgb(0.08, 0.08, 0.08);
+    const nameSize = 28;
+    page.drawText(ctx.brand.agencyName, {
+      x: PAD,
+      y: darkBandY + (DARK_H - nameSize) / 2,
+      size: nameSize,
+      font: helvBold,
+      color: nameColor,
+    });
+  }
+
+  // Doc number bottom-right of dark band
+  if (ctx.docNumber) {
+    const docColor = themeMode === "dark" ? rgb(0.9, 0.9, 0.9) : rgb(0.15, 0.15, 0.15);
+    const docSize = 12;
+    const docW = helvBold.widthOfTextAtSize(ctx.docNumber, docSize);
+    page.drawText(ctx.docNumber, {
+      x: W - PAD - docW,
+      y: darkBandY + 14,
+      size: docSize,
+      font: helvBold,
+      color: docColor,
+    });
+    if (ctx.dateStamp) {
+      const dateColor = themeMode === "dark" ? rgb(0.7, 0.7, 0.7) : rgb(0.45, 0.45, 0.45);
+      const dateSize = 9;
+      const dateW = helv.widthOfTextAtSize(ctx.dateStamp, dateSize);
+      page.drawText(ctx.dateStamp, {
+        x: W - PAD - dateW,
+        y: darkBandY + 2,
+        size: dateSize,
+        font: helv,
+        color: dateColor,
+      });
+    }
+  }
+
+  // Project name small + grey in cream strip
+  const stripY = headerTop + (CREAM_H - 9) / 2;
+  if (ctx.projectName) {
+    page.drawText(clip(ctx.projectName, 70), {
+      x: PAD,
+      y: stripY,
+      size: 9,
+      font: helvBold,
+      color: rgb(0.4, 0.4, 0.4),
+    });
+  }
+  if (ctx.docType) {
+    const dtW = helv.widthOfTextAtSize(ctx.docType, 8);
+    page.drawText(ctx.docType, {
+      x: W - PAD - dtW,
+      y: stripY + 0.5,
+      size: 8,
+      font: helv,
+      color: rgb(0.45, 0.45, 0.45),
+    });
   }
 }

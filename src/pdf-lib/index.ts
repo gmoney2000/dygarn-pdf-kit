@@ -8,6 +8,11 @@ export type { BookendContext } from "./context";
 
 export { drawBrandedCover } from "./cover";
 
-export { BRANDED_HEADER_HEIGHT, BRANDED_HEADER_MINIMAL_H, drawBrandedHeader } from "./header";
+export {
+  BRANDED_HEADER_HEIGHT,
+  BRANDED_HEADER_MINIMAL_H,
+  BRANDED_HEADER_PROMINENT_H,
+  drawBrandedHeader,
+} from "./header";
 
 export { BRANDED_FOOTER_HEIGHT, drawBrandedFooter } from "./footer";
