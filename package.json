@@ -1,7 +1,7 @@
 {
   "name": "@gmoney2000/dygarn-pdf-kit",
   "version": "0.1.2",
-  "description": "Branded PDF design system for DyGarn ecosystem apps (RepFirm, dygarn-dashboard). Shared visual primitives + style themes for quote, submittal, PO, and outreach kits.",
+  "description": "Shared PDF layout components for DyGarn apps.",
   "license": "UNLICENSED",
   "private": false,
   "author": "Greg Drysdale <greg@dygarn.com>",

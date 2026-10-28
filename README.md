@@ -1,17 +1,17 @@
 # @gmoney2000/dygarn-pdf-kit
 
-Branded PDF design system for the DyGarn ecosystem (RepFirm, dygarn-dashboard, future apps).
+Shared PDF layout components for DyGarn apps.
 
 Shared visual primitives + style themes so quote, submittal, PO, and outreach kit PDFs across all DyGarn apps look like they came from the same shop.
 
 ## Why it exists
 
-Each app (RepFirm, dygarn-dashboard) had its own PDF generation code with similar-but-drifting visual layouts. This package extracts the visual primitives so:
+Each DyGarn app had its own PDF generation code with similar-but-drifting visual layouts. This package extracts the visual primitives so:
 
 - **One source of truth** for the bookend header band, accent stripe, info section, line items table, totals box, footer
 - **Same look** across all DyGarn ecosystem outputs no matter which app produced them
 - **Composable** — each app picks the primitives it needs and supplies its own data + business logic
-- **Brand-agnostic** — primitives take a generic `BrandInput` shape, so they work for both tenant-style branding (RepFirm) and prospect-style branding (dygarn-dashboard outreach)
+- **Brand-agnostic** - primitives take a generic `BrandInput` shape, so they work for both account-style branding and prospect-style branding
 
 ## Install
 
@@ -108,11 +108,11 @@ await drawBookendCover(pdf, { brand, fonts, title: "Submittal Package", projectN
 The package is brand-agnostic. Adapter functions live in `src/brand.ts`:
 
 ```ts
-// RepFirm
+// account branding
 import { brandFromTenantBranding } from "@gmoney2000/dygarn-pdf-kit";
 const brand = brandFromTenantBranding(tenantBranding);
 
-// dygarn-dashboard
+// prospect branding
 import { brandFromProspectBrand } from "@gmoney2000/dygarn-pdf-kit";
 const brand = brandFromProspectBrand(prospectBrand);
 ```
@@ -121,7 +121,7 @@ Both produce the same `BrandInput` shape that all primitives consume.
 
 ## Style themes
 
-Five visual styles ported from RepFirm:
+Five visual styles:
 
 - `branded-bookend` (default) — dark band + accent stripe + cream info strip
 - `bold` — heavy color blocks
